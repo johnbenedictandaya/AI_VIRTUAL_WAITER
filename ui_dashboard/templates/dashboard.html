@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("bistro-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Perpetual Bistro - Self-Order Kiosk</title>
+<style>
+/* ===== Perpetual Bistro design system: "menu board" =====
+   Fredoka (rounded display) + Figtree (interface) + DM Mono (receipts, clocks, filenames), all bundled locally.
+   Colour roles: ink = selected, mustard = go/affirm, ketchup red = commit & alerts, status hues are muted. */
+@font-face{font-family:"Fredoka";src:url("/static/fonts/fredoka-latin-wght-normal.woff2") format("woff2");font-weight:300 700;font-display:swap}
+@font-face{font-family:"Figtree";src:url("/static/fonts/figtree-latin-wght-normal.woff2") format("woff2");font-weight:300 900;font-display:swap}
+@font-face{font-family:"DM Mono";src:url("/static/fonts/dm-mono-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"DM Mono";src:url("/static/fonts/dm-mono-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
+:root{
+  color-scheme:light;
+  --bg:#F1EFEA;--card:#FDFCFA;--soft:#F6F4EF;--bubble:#F6F4EF;--line:#E3DFD5;--line-2:#CFC9BC;
+  --ink:#27221D;--muted:#6B645A;--focus:#2B6CDF;
+  --red:#D2392B;--red-d:#AE2C20;--red-t:#FBE7E3;--on-red:#FFFFFF;
+  --yellow:#F5B52F;--yellow-d:#DC9B12;--yellow-t:#FDF1D3;--on-yellow:#27221D;
+  --ok:#2F7F51;--ok-t:#E1F0E7;--on-ok:#FFFFFF;--data:#C9622A;
+  --board:#26211D;--on-board:#F5EFE4;--on-board-2:#BDB4A6;
+  --shadow:0 1px 2px rgba(39,34,29,.05),0 8px 20px -8px rgba(39,34,29,.14);
+  --st-free:#2F7F51;--st-reserved:#5560B0;--st-seated:#25807A;--st-ordering:#A8700A;--st-preparing:#CF6224;--st-dining:#C1352A;--st-cleaning:#587489;--st-blocked:#7A7266;
+  --r-btn:10px;
+  --f-display:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"DM Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#151210;--card:#1F1B17;--soft:#27221D;--bubble:#27221D;--line:#352F28;--line-2:#4A4238;
+  --ink:#F2ECE1;--muted:#A79E90;--focus:#7FB0FF;
+  --red:#EC6453;--red-d:#D14B3A;--red-t:#3A1F1B;--on-red:#1E0F0C;
+  --yellow:#F2BB4A;--yellow-d:#D9A02C;--yellow-t:#352C14;--on-yellow:#27221D;
+  --ok:#5DBB83;--ok-t:#1B2E23;--on-ok:#0F1F16;--data:#F08A52;
+  --board:#0F0D0B;--on-board:#F2ECE1;--on-board-2:#A79E90;
+  --shadow:0 1px 0 rgba(255,255,255,.03),0 10px 24px -10px rgba(0,0,0,.65);
+  --st-free:#5DBB83;--st-reserved:#8C95E6;--st-seated:#4FC1BA;--st-ordering:#E3A93A;--st-preparing:#F08A52;--st-dining:#EC6453;--st-cleaning:#8FAFC4;--st-blocked:#A79E90;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#151210;--card:#1F1B17;--soft:#27221D;--bubble:#27221D;--line:#352F28;--line-2:#4A4238;
+  --ink:#F2ECE1;--muted:#A79E90;--focus:#7FB0FF;
+  --red:#EC6453;--red-d:#D14B3A;--red-t:#3A1F1B;--on-red:#1E0F0C;
+  --yellow:#F2BB4A;--yellow-d:#D9A02C;--yellow-t:#352C14;--on-yellow:#27221D;
+  --ok:#5DBB83;--ok-t:#1B2E23;--on-ok:#0F1F16;--data:#F08A52;
+  --board:#0F0D0B;--on-board:#F2ECE1;--on-board-2:#A79E90;
+  --shadow:0 1px 0 rgba(255,255,255,.03),0 10px 24px -10px rgba(0,0,0,.65);
+  --st-free:#5DBB83;--st-reserved:#8C95E6;--st-seated:#4FC1BA;--st-ordering:#E3A93A;--st-preparing:#F08A52;--st-dining:#EC6453;--st-cleaning:#8FAFC4;--st-blocked:#A79E90;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-display)}
+button{font:600 14px/1.2 var(--f-body);cursor:pointer;border:1px solid var(--line-2);border-radius:var(--r-btn);padding:8px 14px;color:var(--ink);background:var(--card);transition:background .12s,border-color .12s,color .12s}
+button:hover:not(:disabled){background:var(--soft);border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.cta{background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow);font-weight:700}
+button.cta:hover:not(:disabled){background:var(--yellow-d);border-color:var(--yellow-d)}
+button.primary{background:var(--red);border-color:var(--red);color:var(--on-red);font-weight:700}
+button.primary:hover:not(:disabled){background:var(--red-d);border-color:var(--red-d)}
+button.on,button.active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+button.on:hover:not(:disabled),button.active:hover:not(:disabled){background:var(--ink);color:var(--bg)}
+#voiceBtn.on,#micBtn.on{background:var(--ok);border-color:var(--ok);color:var(--on-ok)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ---------- header (the menu board) ---------- */
+.top{display:flex;align-items:center;gap:16px;padding:0 24px;min-height:64px;background:var(--board);color:var(--on-board);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:200px}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--yellow);color:#27221D;display:grid;place-items:center}
+.logo svg{width:25px;height:25px}
+.brand h1{margin:0;font:600 22px/1 var(--f-display);letter-spacing:.01em}
+.brand small{display:block;margin-top:4px;color:var(--on-board-2);font-size:12.5px}
+.steps{display:flex;gap:2px;list-style:none;margin:0;padding:0}
+.steps li{padding:5px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--on-board-2)}
+.steps li.done{color:var(--on-board)}.steps li.done::before{content:"\2713\00a0"}
+.steps li.on{background:var(--yellow);color:#27221D}
+.chip{background:rgba(255,255,255,.09);color:var(--on-board);font:600 15px var(--f-display);border-radius:8px;padding:6px 12px}
+.top button{background:transparent;color:var(--on-board);border-color:rgba(255,255,255,.28);padding:6px 12px}
+.top button:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6)}
+#banner{display:none;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 24px;background:var(--yellow-t);color:var(--ink);border-bottom:1px solid color-mix(in srgb,var(--yellow-d) 40%,transparent);font-weight:600}
+#banner.show{display:flex}
+#banner input{width:78px;padding:6px 10px;border-radius:8px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font:600 15px var(--f-body)}
+#banner .hint{font-weight:500;color:var(--muted)}
+/* ---------- layout ---------- */
+main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 410px;gap:20px;padding:18px 24px 92px}   /* room for the chat button */
+.menuwrap{display:flex;flex-direction:column;min-height:0}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-bottom:14px}
+#tabs{display:flex;gap:6px;overflow-x:auto;flex:1 1 auto;min-width:0;padding:2px}
+#tabs button{white-space:nowrap;border-color:transparent;background:transparent;color:var(--muted);border-radius:99px;padding:7px 15px}
+#tabs button:hover{background:var(--card);color:var(--ink);border-color:var(--line)}
+#tabs button.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#q{flex:0 0 220px;width:220px;padding:8px 14px;border-radius:99px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font:inherit}
+#q:focus-visible,input[type=text]:focus-visible{border-color:var(--ink);outline-offset:1px}
+#menu{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:18px 16px;align-content:start;padding:2px 4px 18px}
+.cat{grid-column:1/-1;margin:12px 0 -2px;font:600 20px/1.2 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:12px}
+.cat::after{content:"";flex:1;height:1px;background:var(--line)}
+.none{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0}
+/* ---------- menu card + the price sticker ---------- */
+.item{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s}
+.item:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
+.pwrap{position:relative;margin:8px 8px 0}
+.photo{aspect-ratio:4/3;background:var(--soft);border-radius:11px;overflow:hidden;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{position:absolute;inset:9px;border:1.5px dashed var(--line-2);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:var(--muted);padding:6px}
+.ph .em{font-size:32px;opacity:.6;line-height:1}.ph .lbl{font-size:12px;font-weight:600}
+.ph code{font:500 11px/1.25 var(--f-mono);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--ink);overflow-wrap:anywhere}
+.sticker{position:absolute;right:10px;bottom:-15px;background:var(--yellow);color:var(--on-yellow);font:600 19px/1 var(--f-display);padding:8px 12px 7px;border-radius:10px;box-shadow:0 2px 0 var(--yellow-d);transform:rotate(-3deg);white-space:nowrap}
+.sticker small{font:700 10.5px var(--f-body);margin-left:3px;opacity:.7}
+.item .body{padding:24px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
+.nm{font:600 17px/1.2 var(--f-display);min-height:2.4em}
+.pills{display:flex;flex-wrap:wrap;gap:4px;min-height:22px}
+.pill{font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--soft);border:1px solid var(--line);color:var(--muted);text-transform:capitalize}
+.pill.free{color:var(--ok);border-color:transparent;background:var(--ok-t)}
+.item .add{margin-top:auto;width:100%;padding:9px 14px;color:var(--ink);background:var(--yellow-t);border-color:color-mix(in srgb,var(--yellow-d) 55%,transparent)}
+.item .add:hover:not(:disabled){background:var(--yellow);border-color:var(--yellow);color:var(--on-yellow)}
+.item.out .photo{filter:grayscale(1);opacity:.55}.item.out .nm{color:var(--muted)}
+.item.out .sticker{background:var(--line);color:var(--muted);box-shadow:none}
+.item.out::after{content:"Sold out";position:absolute;top:16px;left:16px;background:var(--board);color:var(--on-board);font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px}
+/* ---------- side column ---------- */
+.side{display:flex;flex-direction:column;gap:16px;min-height:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.card h2{margin:0;padding:16px 18px 8px;font:600 19px/1.2 var(--f-display);color:var(--ink);display:flex;align-items:center;gap:8px}
+.tray{flex:0 1 auto;max-height:100%}
+/* the AI waiter is a floating panel opened from the round button (bottom right) */
+.chat{position:fixed;right:450px;bottom:24px;width:390px;height:min(620px,calc(100vh - 110px));z-index:6;display:none;box-shadow:0 18px 50px -10px rgba(0,0,0,.45)}
+.chat.open{display:flex;animation:pop .16s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.fab{position:fixed;right:24px;bottom:24px;z-index:6;width:62px;height:62px;padding:0;border-radius:50%;background:var(--yellow);border:0;color:var(--on-yellow);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.35),0 2px 0 var(--yellow-d)}
+.fab:hover:not(:disabled){background:var(--yellow-d);transform:scale(1.05)}
+.fab svg{width:30px;height:30px}
+.fab.hide{display:none}
+.fab .badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:var(--red);color:var(--on-red);font:700 12px/22px var(--f-body);text-align:center;border:2px solid var(--bg)}
+.fab .badge[hidden]{display:none}
+.fab.live::after{content:"";position:absolute;left:2px;bottom:2px;width:14px;height:14px;border-radius:50%;background:var(--ok);border:2px solid var(--bg)}
+.fab-tip{position:fixed;right:96px;bottom:40px;z-index:6;background:var(--board);color:var(--on-board);font-weight:600;font-size:13px;padding:6px 12px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.3);pointer-events:none;opacity:0;transition:opacity .15s;white-space:nowrap}
+.fab:hover~.fab-tip,.fab:focus-visible~.fab-tip{opacity:1}
+.chathead .x{padding:2px 10px;font-size:20px;line-height:1.1;border-radius:8px;align-self:center}
+.chathead .grow{flex:1}
+#cart{flex:1 1 auto;min-height:48px;overflow-y:auto;padding:0 18px}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .note{display:inline-block;margin-top:3px;padding:0 9px;border-radius:99px;background:var(--yellow-t);color:var(--ink);font-size:12px;font-weight:600;border:1px solid color-mix(in srgb,var(--yellow-d) 45%,transparent)}
+.qty{display:flex;align-items:center;gap:8px;font-weight:700;font-variant-numeric:tabular-nums}
+.qty button{padding:0;width:28px;height:28px;line-height:1;border-radius:8px}
+.price{min-width:84px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+.totals{padding:12px 18px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;color:var(--muted)}
+.totals div{display:flex;justify-content:space-between}
+.totals .grand{align-items:baseline;margin-top:4px;color:var(--ink);font:600 15px var(--f-body)}
+.totals .grand span:last-child{font:600 26px/1.1 var(--f-display)}
+.disc{padding:10px 18px 0;border-top:1px solid var(--line)}
+.disc .drow{display:flex;gap:8px}.disc .drow input{flex:1;min-width:0;padding:7px 12px;font-size:14px;text-transform:uppercase}.disc .drow input::placeholder{text-transform:none}
+.disc .drow button{padding:7px 14px}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.dchips button{font-size:12.5px;font-weight:500;padding:3px 11px;border-radius:99px;color:var(--muted)}
+.dchips button.applied{background:var(--ok-t);border-color:var(--ok);color:var(--ok);font-weight:700}
+#discInfo{margin-top:8px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}#discInfo:empty{display:none}
+#discInfo.bad{color:var(--red)}#discInfo button{padding:1px 9px;font-size:12px}
+.totals .save{color:var(--ok);font-weight:600}
+.actions{display:flex;gap:8px;padding:0 18px 16px}.actions .primary{flex:1;padding:11px 14px;font-size:15px}
+.chathead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-right:18px}
+.chathead h2{padding-bottom:6px;white-space:nowrap}
+#voiceStatus{font-size:12.5px;color:var(--muted)}#voiceStatus:empty{display:none}
+.vrow{display:flex;gap:6px;flex-wrap:wrap;padding:0 18px 8px}.vrow button{padding:4px 11px;font-size:12.5px}
+#log{flex:1;overflow-y:auto;padding:6px 16px 8px;display:flex;flex-direction:column;gap:7px}
+.msg{padding:9px 13px;border-radius:14px;max-width:92%;white-space:pre-wrap;background:var(--soft);border:1px solid var(--line)}
+.msg.user{align-self:flex-end;background:var(--yellow-t);border-color:color-mix(in srgb,var(--yellow-d) 40%,transparent);border-bottom-right-radius:4px}
+.msg.waiter{border-bottom-left-radius:4px}
+.msg.system{align-self:center;background:none;border:0;padding:0;line-height:1.3;color:var(--muted);font-size:12.5px}
+.msg pre{margin:0;font:500 12px/1.55 var(--f-mono);overflow-wrap:anywhere}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding:8px 16px 10px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chips button{flex:none;white-space:nowrap;font-size:12.5px;padding:4px 11px;color:var(--muted);border-radius:99px;font-weight:500}
+form{display:flex;gap:8px;padding:10px 16px 16px;border-top:1px solid var(--line)}
+input[type=text]{flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--card);color:var(--ink);font:inherit}
+#err{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:min(92vw,640px);background:var(--board);color:var(--on-board);padding:10px 18px;border-radius:12px;font-weight:600;display:none;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:5}
+#err.show{display:block}
+#modal{position:fixed;inset:0;background:rgba(15,12,9,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+#modal.show{display:flex}
+#modal .box{background:var(--card);border-radius:18px;padding:6px 0 22px;max-width:540px;width:100%;max-height:90vh;overflow:auto;text-align:center;border:1px solid var(--line)}
+#modal h2{margin:0;padding:20px 20px 12px;font:600 28px/1.1 var(--f-display);justify-content:center}
+.mbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0 22px}.mbtns button{padding:10px 18px}
+#modal pre{font:500 12.5px/1.6 var(--f-mono);overflow-wrap:anywhere;white-space:pre-wrap;margin:0 22px 18px;text-align:left;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px}
+/* ---------- narrow screens: one column, the page itself scrolls ---------- */
+@media (max-width:1000px){
+  main{display:flex;flex-direction:column;overflow-y:auto;gap:16px;padding:14px 14px 84px}
+  .menuwrap,.side{flex:none;min-height:auto}
+  #menu{flex:none;overflow:visible}
+  .tray{flex:none;max-height:none}
+  .chat{left:10px;right:10px;width:auto;bottom:88px;height:min(560px,calc(100vh - 110px))}
+  .fab{right:14px;bottom:14px}.fab-tip{display:none}
+  .top{padding:10px 14px;gap:10px}#banner{padding:10px 14px}
+  #q{width:100%}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5a8 6.5 0 0 1 16 0z"/><path d="M3 13.6h18"/><path d="M5 16.6h14"/><path d="M5 16.6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/></svg></div><div><h1>Perpetual Bistro</h1><small>Self-order kiosk</small></div></div>
+  <ol class="steps" id="steps"><li>Table</li><li>Order</li><li>Review</li><li>Done</li></ol>
+  <span class="chip" id="table">Table --</span>
+  <button id="newBtn">New table</button>
+  <button id="themeBtn" title="Switch between automatic, light and dark">Theme: Auto</button>
+</header>
+
+<div id="banner"><span>Welcome! Which table are you at?</span>
+  <input type="number" id="tableNo" min="1" max="99" placeholder="e.g. 4"><button class="cta" id="tableGo">Start</button>
+  <span class="hint">Or open the AI waiter (chat button) and say &ldquo;table four&rdquo;.</span>
+  <span class="hint" id="takenHint"></span></div>
+
+<main>
+  <section class="menuwrap">
+    <div class="toolbar"><nav id="tabs"></nav><input type="search" id="q" placeholder="Search the menu..." autocomplete="off"></div>
+    <div id="menu"></div>
+  </section>
+
+  <aside class="side">
+    <section class="card tray">
+      <h2>Your tray</h2>
+      <div id="cart"></div>
+      <div class="disc" id="discBox">
+        <div class="drow"><input type="text" id="discCode" placeholder="Promo code" autocomplete="off" maxlength="20" aria-label="Promo code">
+          <button id="discApply">Apply</button></div>
+        <div class="dchips" id="dchips"></div>
+        <div id="discInfo"></div>
+      </div>
+      <div class="totals">
+        <div><span>Subtotal</span><span id="sub">0.00 PHP</span></div>
+        <div class="save" id="discLine" hidden><span id="discLbl">Discount</span><span id="discAmt">0.00 PHP</span></div>
+        <div><span>Service fee (10%)</span><span id="fee">0.00 PHP</span></div>
+        <div class="grand"><span>Total</span><span id="grand">0.00 PHP</span></div>
+      </div>
+      <div class="actions"><button id="clearBtn">Clear</button><button class="primary" id="confirmBtn">Confirm &amp; send to kitchen</button></div>
+    </section>
+
+    <section class="card chat" id="chatPanel" role="dialog" aria-label="AI waiter">
+      <div class="chathead"><h2>AI waiter</h2><span class="grow"></span><span id="voiceStatus"></span>
+        <button class="x" id="aiClose" aria-label="Close the AI waiter" title="Close">&times;</button></div>
+      <div class="vrow"><button id="voiceBtn" aria-pressed="false">Voice replies: OFF</button>
+        <button id="micBtn" aria-pressed="false">Mic: OFF</button>
+        <button id="testBtn" title="Check that the browser can hear your microphone">Test mic</button></div>
+      <div id="log"></div>
+      <div class="chips" id="chips"></div>
+      <form id="chatForm">
+        <input type="text" id="text" placeholder="Type your order here..." autocomplete="off" autofocus>
+        <button class="cta" id="sendBtn">Send</button>
+      </form>
+    </section>
+  </aside>
+</main>
+
+<button class="fab" id="aiFab" aria-label="Open the AI waiter" aria-expanded="false" aria-controls="chatPanel">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.5-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" stroke-width="2.6"/></svg>
+  <span class="badge" id="aiBadge" hidden>0</span></button>
+<span class="fab-tip" id="aiTip">Ask the AI waiter</span>
+<div id="err" role="status"></div>
+<div id="modal"><div class="box"><h2>Order confirmed</h2><pre id="receipt"></pre>
+  <div class="mbtns"><button id="printBtn">&#128424; Print receipt</button><button class="cta" id="doneBtn">Start new table</button></div></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let voiceOn = false, speaking = false, listening = false, lastMsgCount = -1, busy = false;
+let voiceInfo = {}, lastHeardId = 0, stickyUntil = 0;
+let menuData = [], activeCat = 'All', menuKey = '', openNow = false;
+
+async function api(path, body) {
+  const r = await fetch(path, {method: body === undefined ? 'GET' : 'POST',
+    headers: {'Content-Type': 'application/json'}, body: body === undefined ? undefined : JSON.stringify(body)});
+  return r.json();
+}
+const php = n => Number(n).toFixed(2) + ' PHP';
+function setMsg(t, ms = 0) { const e = $('err'); e.textContent = t; e.classList.toggle('show', !!t); stickyUntil = Date.now() + ms; }
+
+/* ---------------- menu ---------------- */
+const ICONS = [[/fish/i,'🐟'],[/cluck yeah|fried/i,'🍗'],[/nugget/i,'🍗'],[/cluck/i,'🥪'],[/steak/i,'🥩'],[/spaghet/i,'🍝'],
+  [/muffin/i,'🍳'],[/flap|hotcake/i,'🥞'],[/fry/i,'🍟'],[/hash/i,'🥔'],[/corn/i,'🌽'],[/cola/i,'🥤'],[/lemon/i,'🍋'],
+  [/tea/i,'🧋'],[/coffee/i,'☕'],[/water/i,'💧'],[/shake/i,'🥛'],[/swirl|sundae/i,'🍨'],[/cone/i,'🍦'],[/pie/i,'🥧'],
+  [/veggie/i,'🥬'],[/burger|mack|quarter|cheesy|double/i,'🍔']];
+const icon = m => (ICONS.find(([rx]) => rx.test(m.name)) || [0, '🍽️'])[1];
+
+function placeholder(m) {
+  const ph = document.createElement('div'); ph.className = 'ph';
+  const em = document.createElement('div'); em.className = 'em'; em.textContent = icon(m);
+  const lbl = document.createElement('div'); lbl.className = 'lbl'; lbl.textContent = 'Add photo';
+  const code = document.createElement('code'); code.textContent = m.photo + '.jpg';
+  ph.append(em, lbl, code); return ph;
+}
+
+function renderMenu(menu, open) {
+  const q = $('q').value.trim().toLowerCase();
+  const key = JSON.stringify(menu) + open + activeCat + q;
+  if (key === menuKey) return; menuKey = key; menuData = menu; openNow = open;
+  const cats = ['All', ...new Set(menu.map(m => m.category))];
+  if (!cats.includes(activeCat)) activeCat = 'All';
+  const tabs = $('tabs'); tabs.textContent = '';
+  cats.forEach(c => {
+    const b = document.createElement('button'); b.textContent = c; b.className = c === activeCat ? 'active' : '';
+    b.onclick = () => { activeCat = c; menuKey = ''; renderMenu(menuData, openNow); }; tabs.appendChild(b);
+  });
+  const box = $('menu'); box.textContent = ''; let cat = '';
+  const list = menu.filter(m => (activeCat === 'All' || m.category === activeCat) &&
+    (!q || m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q)));
+  if (!list.length) { const n = document.createElement('div'); n.className = 'none'; n.textContent = 'Nothing matches "' + q + '". Try a different word.'; box.appendChild(n); return; }
+  list.forEach(m => {
+    if (activeCat === 'All' && !q && m.category !== cat) { cat = m.category; const h = document.createElement('div'); h.className = 'cat'; h.textContent = cat; box.appendChild(h); }
+    const d = document.createElement('div'); d.className = 'item' + (m.available ? '' : ' out');
+    const wrap = document.createElement('div'); wrap.className = 'pwrap';
+    const photo = document.createElement('div'); photo.className = 'photo';
+    if (m.image) {
+      const img = document.createElement('img'); img.src = m.image; img.alt = m.name; img.loading = 'lazy';
+      img.onerror = () => { photo.textContent = ''; photo.appendChild(placeholder(m)); };
+      photo.appendChild(img);
+    } else photo.appendChild(placeholder(m));
+    const st = document.createElement('div'); st.className = 'sticker';
+    st.append(String(m.price_php % 1 ? m.price_php.toFixed(2) : m.price_php));
+    const cur = document.createElement('small'); cur.textContent = 'PHP'; st.append(cur);
+    wrap.append(photo, st);
+    const body = document.createElement('div'); body.className = 'body';
+    const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = m.name;
+    const pills = document.createElement('div'); pills.className = 'pills';
+    if (m.allergens === 'none') { const p = document.createElement('span'); p.className = 'pill free'; p.textContent = 'No allergens'; pills.appendChild(p); }
+    else m.allergens.split(',').forEach(a => { const p = document.createElement('span'); p.className = 'pill'; p.textContent = a.trim(); pills.appendChild(p); });
+    const btn = document.createElement('button'); btn.className = 'add cta'; btn.textContent = m.available ? 'Add to tray' : 'Sold out'; btn.disabled = !open || !m.available;
+    btn.onclick = async () => render(await api('/api/cart', {item: m.name, delta: 1, notes: ''}), false);
+    body.append(nm, pills, btn); d.append(wrap, body); box.appendChild(d);
+  });
+}
+
+/* ---------------- render ---------------- */
+const STEP = {STATE_GREETING: 0, STATE_TAKING_ORDER: 1, STATE_REVIEW: 2, STATE_CONFIRMED: 3};
+let lastSession = null;
+function render(s, announce) {
+  lastSession = s.session;
+  $('table').textContent = s.table ? 'Table ' + String(s.table).padStart(2, '0') : 'Table --';
+  if (s.error) setMsg(s.error, 6000); else if (Date.now() > stickyUntil) setMsg('');
+  const cur = STEP[s.state] ?? -1;
+  [...$('steps').children].forEach((li, i) => li.className = i < cur ? 'done' : i === cur ? 'on' : '');
+  $('banner').classList.toggle('show', s.state === 'STATE_GREETING');
+  window.takenTables = s.taken || [];
+  $('takenHint').textContent = window.takenTables.length ? 'Unavailable: ' + window.takenTables.join(', ') : '';
+
+  if (s.transcript.length !== lastMsgCount) {            // rebuild the transcript only when it changed
+    const log = $('log'); log.textContent = '';
+    s.transcript.forEach(m => {
+      const d = document.createElement('div'); d.className = 'msg ' + m.who;
+      if (m.text.includes('RECEIPT') || m.text.includes("Here's your order")) { const p = document.createElement('pre'); p.textContent = m.text; d.appendChild(p); }
+      else d.textContent = m.text;
+      log.appendChild(d);
+    });
+    log.scrollTop = log.scrollHeight;
+    const last = s.transcript[s.transcript.length - 1];
+    if (announce && last && last.who === 'waiter') speak(last.text);
+    if (!chatOpen && lastMsgCount !== -1 && last && last.who === 'waiter') bumpUnread();   // a reply arrived while the panel is closed
+    lastMsgCount = s.transcript.length;
+  }
+
+  const cart = $('cart'); cart.textContent = '';
+  if (!s.order.lines.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'Your tray is empty. Tap + Add or tell the waiter!'; cart.appendChild(e); }
+  s.order.lines.forEach(l => {
+    const row = document.createElement('div'); row.className = 'row';
+    const name = document.createElement('div'); name.textContent = l.item;
+    if (l.notes) { const b = document.createElement('div'); b.className = 'note'; b.textContent = l.notes; name.appendChild(b); }
+    const q = document.createElement('div'); q.className = 'qty';
+    const minus = document.createElement('button'); minus.textContent = '-'; minus.onclick = () => adjust(l, -1);
+    const plus = document.createElement('button'); plus.textContent = '+'; plus.onclick = () => adjust(l, 1);
+    const n = document.createElement('span'); n.textContent = l.qty; q.append(minus, n, plus);
+    const p = document.createElement('div'); p.className = 'price'; p.textContent = php(l.line_total_php);
+    row.append(name, q, p); cart.appendChild(row);
+  });
+  $('sub').textContent = php(s.order.subtotal_php); $('fee').textContent = php(s.order.service_fee_php); $('grand').textContent = php(s.order.grand_total_php);
+
+  const open = s.state === 'STATE_TAKING_ORDER' || s.state === 'STATE_REVIEW';
+  renderDiscount(s, open);
+  renderMenu(s.menu || [], open);
+  if (s.voice) syncVoice(s.voice);
+  if (!open && s.state !== 'STATE_GREETING' && micOn) setMic(false);
+  $('aiFab').classList.toggle('live', !!micOn);
+  $('confirmBtn').disabled = $('clearBtn').disabled = !open || !s.order.lines.length;
+  $('text').disabled = $('sendBtn').disabled = s.state === 'STATE_CONFIRMED' || s.state === 'STATE_CANCELLED';
+  $('receipt').textContent = s.receipt || '';
+  $('modal').classList.toggle('show', s.state === 'STATE_CONFIRMED');
+}
+
+/* ---------------- AI waiter panel (round button opens / closes it) ---------------- */
+let chatOpen = false, unread = 0;
+function bumpUnread() { unread++; paintBadge(); }
+function paintBadge() { const b = $('aiBadge'); b.hidden = !unread; b.textContent = unread > 9 ? '9+' : unread; }
+function setChat(open, remember = true) {
+  chatOpen = open;
+  $('chatPanel').classList.toggle('open', open);
+  $('aiFab').classList.toggle('hide', open);
+  $('aiFab').setAttribute('aria-expanded', open);
+  if (open) { unread = 0; paintBadge(); const log = $('log'); log.scrollTop = log.scrollHeight; if (remember) $('text').focus(); }
+  else if (remember && document.activeElement && $('chatPanel').contains(document.activeElement)) $('aiFab').focus();
+  try { localStorage.setItem('bistro-chat', open ? 'open' : 'closed'); } catch (e) {}
+}
+$('aiFab').onclick = () => setChat(true);
+$('aiClose').onclick = () => setChat(false);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && chatOpen) setChat(false); });
+let savedChat = 'closed'; try { savedChat = localStorage.getItem('bistro-chat') || 'closed'; } catch (e) {}
+setChat(savedChat === 'open', false);
+
+/* ---------------- discounts ---------------- */
+let dchipKey = '';
+function renderDiscount(s, open) {
+  const d = s.order.discount, ok = d && d.valid;
+  $('discLine').hidden = !ok;
+  if (ok) { $('discLbl').textContent = 'Discount (' + d.code + ')'; $('discAmt').textContent = '-' + php(s.order.discount_php); }
+  const info = $('discInfo'); info.textContent = ''; info.className = '';
+  if (d) {
+    info.className = ok ? '' : 'bad';
+    const t = document.createElement('span');
+    t.textContent = ok ? d.description + (d.requires_id ? ' - please show a valid ID to our staff.' : '') : d.code + ' not applied: ' + d.reason + '.';
+    const x = document.createElement('button'); x.textContent = 'Remove'; x.onclick = removeDiscount;
+    info.append(t, x);
+  }
+  const list = s.discounts || [], key = JSON.stringify(list) + (d ? d.code : '');
+  if (key !== dchipKey) {                                 // rebuild only when it changed, so typing in the box is never disturbed
+    dchipKey = key; const box = $('dchips'); box.textContent = '';
+    list.forEach(x => {
+      const b = document.createElement('button'); b.textContent = x.code + (x.min_spend ? ' (min ' + x.min_spend + ')' : '');
+      b.title = x.description; b.className = d && d.code === x.code ? 'applied' : '';
+      b.onclick = () => applyDiscount(x.code); box.appendChild(b);
+    });
+  }
+  $('discApply').disabled = $('discCode').disabled = !open;
+  [...$('dchips').children].forEach(b => b.disabled = !open);
+}
+async function applyDiscount(code) {
+  code = (code || '').trim(); if (!code) return;
+  const s = await api('/api/discount', {code}); if (!s.error) $('discCode').value = ''; render(s, false);
+}
+async function removeDiscount() { render(await api('/api/discount', {remove: true}), false); }
+$('discApply').onclick = () => applyDiscount($('discCode').value);
+$('discCode').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('discApply').click(); } };
+
+async function send(text) {
+  if (!text.trim() || busy) return;
+  busy = true; $('sendBtn').disabled = true; setMsg('The waiter is thinking...');
+  try { render(await api('/api/chat', {text}), true); } catch (e) { setMsg('Server unreachable.', 6000); }
+  busy = false; $('sendBtn').disabled = false; $('text').focus();
+}
+async function adjust(l, delta) { render(await api('/api/cart', {item: l.item, delta, notes: l.notes}), false); }
+
+$('chatForm').onsubmit = e => { e.preventDefault(); const t = $('text').value; $('text').value = ''; send(t); };
+$('q').oninput = () => renderMenu(menuData, openNow);
+$('tableGo').onclick = () => {
+  const n = $('tableNo').value; if (!n) return;
+  if ((window.takenTables || []).includes(Number(n))) { setMsg('Table ' + n + ' is not available. Please choose another.', 6000); return; }
+  send('table ' + n);
+};
+$('tableNo').onkeydown = e => { if (e.key === 'Enter') $('tableGo').click(); };
+$('confirmBtn').onclick = async () => render(await api('/api/confirm', {}), true);
+$('clearBtn').onclick = async () => render(await api('/api/clear', {}), false);
+const reset = async () => { lastMsgCount = -1; render(await api('/api/reset', {}), true); };
+$('newBtn').onclick = $('doneBtn').onclick = reset;
+$('printBtn').onclick = () => {                          // opens the 80 mm receipt page and its print dialog
+  if (!lastSession) return;
+  if (!window.open('/receipt/' + lastSession + '?print=1', '_blank')) setMsg('Your browser blocked the receipt window. Allow pop-ups for this site.', 8000);
+};
+['What burgers do you have?', 'Any allergens in Fry Hard?', 'What discounts do you have?', "That's all"].forEach(t => {
+  const b = document.createElement('button'); b.textContent = t; b.onclick = () => send(t); $('chips').appendChild(b); });
+
+/* ---------------- voice: offline (server, Vosk + pyttsx3) with browser fallback ---------------- */
+function paintToggle(btn, on, label) { btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on); btn.textContent = label + (on ? ': ON' : ': OFF'); }
+function setVoiceStatus() { $('voiceStatus').textContent = listening ? 'Listening...' : speaking ? 'Speaking...' : ''; }
+
+const FEMALE_RX = /female|zira|aria|jenny|hazel|susan|linda|heather|eva|catherine|samantha|victoria|karen|moira|tessa|fiona|allison|ava|serena|libby|sonia|google (us|uk) english/i;
+function femaleVoice() {                                  // the waiter always speaks with a female voice when the browser has one
+  const vs = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(v => /^en/i.test(v.lang));
+  return vs.find(v => /female/i.test(v.name)) || vs.find(v => FEMALE_RX.test(v.name)) || null;
+}
+if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};   // voices load lazily in Chrome
+function speak(text) {                                    // browser TTS, only used when offline TTS is unavailable
+  if (voiceInfo.tts_ready || !voiceOn || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text.split('\n')[0].slice(0, 220));
+  const fv = femaleVoice(); if (fv) { u.voice = fv; u.lang = fv.lang; }
+  u.onstart = () => { speaking = true; setVoiceStatus(); };
+  u.onend = u.onerror = () => { speaking = false; setVoiceStatus(); };
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function setVoice(on) {
+  voiceOn = on; if (!on && window.speechSynthesis) speechSynthesis.cancel();
+  paintToggle($('voiceBtn'), on, 'Voice replies'); setVoiceStatus();
+  if (voiceInfo.tts_ready) api('/api/voice', {speak: on});
+}
+$('voiceBtn').onclick = () => setVoice(!voiceOn);
+
+function syncVoice(v) {
+  voiceInfo = v;
+  if (!(v.stt_ready || v.tts_ready)) return;              // browser voice mode
+  if (v.stt_ready) { micOn = v.mic_on; paintToggle($('micBtn'), v.mic_on, 'Mic'); }
+  if (v.tts_ready) { voiceOn = v.speak_on; paintToggle($('voiceBtn'), v.speak_on, 'Voice replies'); }
+  $('voiceStatus').textContent = v.status === 'off' ? '' : 'Voice: ' + v.status;
+  if (v.heard_id !== lastHeardId) { lastHeardId = v.heard_id; if (v.heard) setMsg('Heard: "' + v.heard + '"', 5000); }
+  if (v.last_error) setMsg(v.last_error, 12000);
+}
+
+$('testBtn').onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    const label = stream.getAudioTracks()[0].label || 'default microphone';
+    const ctx = new AudioContext(), an = ctx.createAnalyser(); an.fftSize = 512;
+    ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Uint8Array(an.fftSize), t0 = Date.now(); let peak = 0;
+    const tick = () => {
+      an.getByteTimeDomainData(buf); let max = 0;
+      for (const v of buf) max = Math.max(max, Math.abs(v - 128));
+      peak = Math.max(peak, max);
+      setMsg('Mic test (' + label + ') - say something: ' + '#'.repeat(Math.round(max / 3)), 2000);
+      if (Date.now() - t0 < 6000) requestAnimationFrame(tick);
+      else { stream.getTracks().forEach(t => t.stop()); ctx.close();
+        setMsg(peak > 10 ? 'Mic works (' + label + ').' : 'Mic is SILENT (' + label + '): muted, wrong device, or input level 0. Check Windows Settings > System > Sound > Input.', 15000); }
+    };
+    tick();
+  } catch (e) { setMsg('Cannot open the mic: ' + e.name + ' - ' + e.message, 15000); }
+};
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MIC_ERRORS = {
+  'not-allowed': 'Microphone is blocked. Click the lock icon next to the address bar, set Microphone to Allow, then reload.',
+  'service-not-allowed': 'The browser blocked speech recognition. Use Chrome or Edge on http://localhost.',
+  'no-speech': "I didn't hear anything. Check the default input device in Windows Sound settings, then speak right away.",
+  'audio-capture': 'No microphone found. Plug one in or enable it in Windows Settings > Privacy > Microphone.',
+  'network': 'Browser speech recognition needs internet. Use the offline voice (Vosk model) or type instead.'
+};
+let micOn = false, rec = null, emptyRuns = 0, lastSeen = {};
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+function diagnose(seen) {
+  return !seen.audio ? 'The browser could not open your microphone. Press Test mic.'
+    : !seen.sound ? 'The mic opened but heard NO sound (muted or wrong input device). Press Test mic.'
+    : !seen.speech ? 'It heard noise but no speech. Speak louder, right after "Listening".'
+    : 'It heard you, but the online speech service returned nothing (blocked network/VPN?).';
+}
+function setMic(on) {
+  if (voiceInfo.stt_ready) {                                // offline Vosk running on the server
+    micOn = on; paintToggle($('micBtn'), on, 'Mic');
+    api('/api/voice', {mic: on}).then(v => { voiceInfo = v; });
+    return;
+  }
+  if (on && voiceInfo.stt_error) setMsg('Offline voice unavailable (' + voiceInfo.stt_error + '). Trying browser voice instead.', 9000);
+  browserSetMic(on);
+}
+function browserSetMic(on) {
+  micOn = on; paintToggle($('micBtn'), on, 'Mic');
+  if (on) { emptyRuns = 0; listenOnce(); }
+  else { if (rec) { try { rec.abort(); } catch (e) {} } rec = null; listening = false; setVoiceStatus(); }
+}
+async function afterReply() { await sleep(500); const t0 = Date.now(); while (speaking && Date.now() - t0 < 20000) await sleep(200); }
+function listenOnce() {
+  if (!micOn || rec) return;
+  if (!SR) { setMsg('This browser has no speech recognition. Use Google Chrome or Microsoft Edge.', 12000); setMic(false); return; }
+  const r = rec = new SR();
+  r.lang = 'en-US'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+  let finalText = '', fatal = false; const seen = lastSeen = {};
+  r.onaudiostart = () => seen.audio = true; r.onsoundstart = () => seen.sound = true; r.onspeechstart = () => seen.speech = true;
+  r.onstart = () => { listening = true; setVoiceStatus(); setMsg('Listening... speak now', 15000); };
+  r.onresult = ev => {
+    let interim = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) { const t = ev.results[i][0].transcript; if (ev.results[i].isFinal) finalText += t; else interim += t; }
+    $('text').value = finalText + interim;
+  };
+  r.onerror = ev => { if (ev.error === 'no-speech' || ev.error === 'aborted') return; fatal = true; setMsg(MIC_ERRORS[ev.error] || ('Speech error: ' + ev.error), 15000); };
+  r.onend = async () => {
+    listening = false; rec = null; setVoiceStatus();
+    if (!micOn) return;
+    if (fatal) { setMic(false); return; }
+    const t = (finalText || $('text').value).trim();
+    if (t) { emptyRuns = 0; $('text').value = ''; setMsg('Heard: "' + t + '"', 4000); await send(t); await afterReply(); listenOnce(); }
+    else if (++emptyRuns >= 4) { setMic(false); setMsg('Mic turned OFF - nothing heard 4 times in a row. ' + diagnose(lastSeen), 20000); }
+    else setTimeout(listenOnce, 400);
+  };
+  try { r.start(); } catch (e) { rec = null; setMic(false); setMsg('Could not start the microphone: ' + e.message, 10000); }
+}
+$('micBtn').onclick = () => setMic(!micOn);
+setVoice(false); paintToggle($('micBtn'), false, 'Mic');
+
+/* keep the tray in sync with SQLite (also reflects tool calls made by Qwen) */
+setInterval(async () => { if (!busy) { try { render(await api('/api/state'), false); } catch (e) {} } }, 1200);
+api('/api/state').then(s => render(s, false));
+
+/* ---------------- theme: auto / light / dark ---------------- */
+const THEMES = ['auto', 'light', 'dark'];
+const savedTheme = () => { try { return localStorage.getItem('bistro-theme') || 'auto'; } catch (e) { return 'auto'; } };
+function applyTheme(t) {
+  const r = document.documentElement;
+  if (t === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', t);
+  $('themeBtn').textContent = 'Theme: ' + {auto: 'Auto', light: 'Light', dark: 'Dark'}[t];
+  try { localStorage.setItem('bistro-theme', t); } catch (e) {}
+}
+$('themeBtn').onclick = () => applyTheme(THEMES[(THEMES.indexOf(savedTheme()) + 1) % THEMES.length]);
+applyTheme(savedTheme());
+</script>
+<script src="/static/floor_plan.js"></script>
+<script src="/static/manager.js"></script>
+</body>
+</html>

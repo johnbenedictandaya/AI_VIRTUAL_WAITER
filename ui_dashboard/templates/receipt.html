@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Receipt #{{ sid }} - Perpetual Bistro</title>
+<style>
+  /* Thermal-printer style: 80 mm roll. On A4 / Letter it prints as a narrow slip at the top of the page. */
+  @page { size: 80mm auto; margin: 4mm; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#EDEAE3;color:#111;font:13px/1.45 "DM Mono",ui-monospace,Consolas,"Courier New",monospace}
+  .bar{display:flex;gap:8px;justify-content:center;padding:14px}
+  .bar button{font:600 14px system-ui,sans-serif;padding:9px 18px;border-radius:9px;border:1px solid #27221D;background:#F5B52F;color:#27221D;cursor:pointer}
+  .bar button.alt{background:#fff}
+  .slip{width:80mm;max-width:100%;margin:0 auto 24px;background:#fff;padding:6mm 5mm;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+  h1{margin:0;text-align:center;font:700 18px/1.2 system-ui,sans-serif;letter-spacing:.02em}
+  .sub{text-align:center;margin:2px 0 8px;font-size:12px}
+  hr{border:0;border-top:1px dashed #111;margin:8px 0}
+  .meta div,.tot div{display:flex;justify-content:space-between;gap:8px}
+  .line{margin:5px 0}.line .r{display:flex;justify-content:space-between;gap:8px}
+  .note{padding-left:14px;font-size:12px}
+  .tot .grand{font-weight:700;font-size:15px;margin-top:4px;border-top:1px solid #111;padding-top:4px}
+  .idbox{margin-top:8px;font-size:12px}.idbox div{margin-top:12px;border-bottom:1px solid #111;height:14px}
+  .thanks{text-align:center;margin-top:10px}
+  .small{font-size:11px;text-align:center;margin-top:6px;color:#444}
+  @media print{
+    body{background:#fff}.bar{display:none}
+    .slip{width:72mm;max-width:100%;margin:0;padding:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="window.print()">Print receipt</button><button class="alt" onclick="window.close()">Close</button></div>
+<div class="slip">
+  <h1>PERPETUAL BISTRO</h1>
+  <div class="sub">Official order receipt</div>
+  <hr>
+  <div class="meta">
+    <div><span>Receipt #</span><span>{{ sid }}</span></div>
+    <div><span>Table</span><span>{{ table }}</span></div>
+    <div><span>Date</span><span>{{ when }}</span></div>
+  </div>
+  <hr>
+  {% for l in order.lines %}
+  <div class="line">
+    <div class="r"><span>{{ l.qty }} x {{ l.item }}</span><span>{{ '%.2f'|format(l.line_total_php) }}</span></div>
+    {% if l.qty > 1 %}<div class="note">@ {{ '%.2f'|format(l.unit_price_php) }}</div>{% endif %}
+    {% if l.notes %}<div class="note">* {{ l.notes }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  <hr>
+  <div class="tot">
+    <div><span>Subtotal</span><span>{{ '%.2f'|format(order.subtotal_php) }}</span></div>
+    {% if disc and disc.valid %}<div><span>Discount ({{ disc.code }})</span><span>-{{ '%.2f'|format(order.discount_php) }}</span></div>{% endif %}
+    <div><span>Service fee (10%)</span><span>{{ '%.2f'|format(order.service_fee_php) }}</span></div>
+    <div class="grand"><span>TOTAL (PHP)</span><span>{{ '%.2f'|format(order.grand_total_php) }}</span></div>
+  </div>
+  {% if disc and disc.valid and disc.requires_id %}
+  <hr>
+  <div class="idbox">{{ disc.description }}<br>To be filled in and checked by staff:
+    <div></div>Name / ID no.<div></div>Signature
+  </div>
+  {% endif %}
+  <hr>
+  <div class="thanks">Thank you, enjoy your meal!</div>
+  <div class="small">Printed {{ printed }}</div>
+</div>
+{% if auto %}<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 250); });</script>{% endif %}
+</body>
+</html>
