@@ -1,0 +1,45 @@
+PHOTO GUIDE - drop your menu photos into this folder.
+Name each file exactly like the list below (.jpg, .jpeg, .png, .webp, .gif or .avif all work).
+Landscape 4:3 photos (for example 800x600) look best. Refresh the page after adding a photo.
+
+
+[Burgers]
+  big-mack-daddy.jpg    <-  Big Mack Daddy
+  quarter-pounder-ous-cheese.jpg    <-  Quarter Pounder-ous Cheese
+  cheesy-does-it.jpg    <-  Cheesy Does It
+  double-trouble-cheeseburger.jpg    <-  Double Trouble Cheeseburger
+  lettuce-be-friends-veggie-burger.jpg    <-  Lettuce Be Friends Veggie Burger
+  fishy-business-sandwich.jpg    <-  Fishy Business Sandwich
+
+[Chicken]
+  cluck-norris-sandwich.jpg    <-  Cluck Norris Sandwich
+  nugget-life-chose-me.jpg    <-  Nugget Life Chose Me (6pc)
+
+[Rice & Pasta]
+  cluck-yeah-fried-chicken.jpg    <-  Cluck Yeah Fried Chicken
+  steak-me-seriously.jpg    <-  Steak Me Seriously
+  sweet-spaghet-alert.jpg    <-  Sweet Spaghet Alert
+
+[Breakfast]
+  egg-cellent-muffin.jpg    <-  Egg-cellent Muffin
+  flap-jacked-hotcakes.jpg    <-  Flap Jacked Hotcakes
+
+[Sides]
+  fry-hard.jpg    <-  Fry Hard
+  hash-tag-brown.jpg    <-  Hash Tag Brown
+  corn-y-jokes.jpg    <-  Corn-y Jokes
+
+[Drinks]
+  bubble-trouble-cola.jpg    <-  Bubble Trouble Cola
+  lemon-lime-time.jpg    <-  Lemon Lime Time
+  brew-tiful-iced-tea.jpg    <-  Brew-tiful Iced Tea
+  wake-up-call-coffee.jpg    <-  Wake-Up Call Coffee
+  aqua-man-bottled-water.jpg    <-  Aqua Man Bottled Water
+  shake-your-shake-maker.jpg    <-  Shake Your Shake Maker
+
+[Desserts]
+  swirl-me-maybe.jpg    <-  Swirl Me Maybe
+  sundae-funday.jpg    <-  Sundae Funday
+  cone-voyage.jpg    <-  Cone Voyage
+  apple-of-my-pie.jpg    <-  Apple of My Pie
+  mango-tango-pie.jpg    <-  Mango Tango Pie
