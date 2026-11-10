@@ -1,0 +1,4 @@
+# One fix per line:  what Vosk heard => what the customer meant
+# Add new mishearings from sample_conversation_log.json here. No restart of the database needed.
+fish a business => fishy business
+i was a => i want a

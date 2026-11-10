@@ -1,0 +1,237 @@
+{
+  "model": "qwen3:4b",
+  "table_no": 1,
+  "session_id": 37,
+  "final_state": "STATE_CONFIRMED",
+  "events": [
+    {
+      "time": "2026-11-07T10:41:13",
+      "state": "STATE_GREETING",
+      "event": "assistant",
+      "text": "Welcome to Perpetual Bistro! What's your table number?"
+    },
+    {
+      "time": "2026-11-07T10:42:55",
+      "state": "STATE_GREETING",
+      "event": "user",
+      "text": "table 1"
+    },
+    {
+      "time": "2026-11-07T10:42:55",
+      "state": "STATE_GREETING",
+      "event": "transition",
+      "from_state": "STATE_GREETING",
+      "to_state": "STATE_TAKING_ORDER"
+    },
+    {
+      "time": "2026-11-07T10:42:55",
+      "state": "STATE_TAKING_ORDER",
+      "event": "assistant",
+      "text": "Great, table 1! I can tell you about our menu, check allergens, and take your order. What would you like?"
+    },
+    {
+      "time": "2026-11-07T10:43:09",
+      "state": "STATE_TAKING_ORDER",
+      "event": "user",
+      "text": "cheesy does it"
+    },
+    {
+      "time": "2026-11-07T10:43:09",
+      "state": "STATE_TAKING_ORDER",
+      "event": "error",
+      "error": "ResponseError(\"model 'qwen3:4b' not found\")"
+    },
+    {
+      "time": "2026-11-07T10:43:09",
+      "state": "STATE_TAKING_ORDER",
+      "event": "assistant",
+      "text": "Sorry, my kitchen assistant is unavailable right now. (Is Ollama running? Try `ollama serve` and `ollama pull qwen3:4b`.)"
+    },
+    {
+      "time": "2026-11-07T10:43:15",
+      "state": "STATE_TAKING_ORDER",
+      "event": "user",
+      "text": "there doesn't already allergic hundred cup was they tag"
+    },
+    {
+      "time": "2026-11-07T10:43:15",
+      "state": "STATE_TAKING_ORDER",
+      "event": "error",
+      "error": "ResponseError(\"model 'qwen3:4b' not found\")"
+    },
+    {
+      "time": "2026-11-07T10:43:15",
+      "state": "STATE_TAKING_ORDER",
+      "event": "assistant",
+      "text": "Sorry, my kitchen assistant is unavailable right now. (Is Ollama running? Try `ollama serve` and `ollama pull qwen3:4b`.)"
+    },
+    {
+      "time": "2026-11-07T10:43:44",
+      "state": "STATE_TAKING_ORDER",
+      "event": "user",
+      "text": "one cheesy does it"
+    },
+    {
+      "time": "2026-11-07T10:43:45",
+      "state": "STATE_TAKING_ORDER",
+      "event": "tool_call",
+      "tool": "add_item_to_order",
+      "arguments": {
+        "item_name": "Cheesy Does It",
+        "qty": 1,
+        "instructions": ""
+      },
+      "result": {
+        "ok": true,
+        "added": "Cheesy Does It",
+        "qty": 1,
+        "instructions": "",
+        "unit_price_php": 85.0
+      },
+      "source": "rule_fallback"
+    },
+    {
+      "time": "2026-11-07T10:43:45",
+      "state": "STATE_TAKING_ORDER",
+      "event": "assistant",
+      "text": "Added 1 x Cheesy Does It - 85.00 PHP\nYour tab: 1 item(s), subtotal 85.00 PHP.\n\nAnything else I can get you?"
+    },
+    {
+      "time": "2026-11-07T10:43:55",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Applied discount PWD20"
+    },
+    {
+      "time": "2026-11-07T10:44:16",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Cart +1 Cheesy Does It"
+    },
+    {
+      "time": "2026-11-07T10:44:16",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Cart +1 Cheesy Does It"
+    },
+    {
+      "time": "2026-11-07T10:44:18",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Applied discount WELCOME10"
+    },
+    {
+      "time": "2026-11-07T10:44:22",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Applied discount PWD20"
+    },
+    {
+      "time": "2026-11-07T10:44:23",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Cart -1 Cheesy Does It"
+    },
+    {
+      "time": "2026-11-07T10:44:29",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Cart +1 Cheesy Does It"
+    },
+    {
+      "time": "2026-11-07T10:44:30",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Applied discount WELCOME10"
+    },
+    {
+      "time": "2026-11-07T10:44:32",
+      "state": "STATE_TAKING_ORDER",
+      "event": "ui_action",
+      "text": "Pressed CONFIRM ORDER"
+    },
+    {
+      "time": "2026-11-07T10:44:32",
+      "state": "STATE_TAKING_ORDER",
+      "event": "transition",
+      "from_state": "STATE_TAKING_ORDER",
+      "to_state": "STATE_REVIEW"
+    },
+    {
+      "time": "2026-11-07T10:44:32",
+      "state": "STATE_REVIEW",
+      "event": "transition",
+      "from_state": "STATE_REVIEW",
+      "to_state": "STATE_CONFIRMED"
+    },
+    {
+      "time": "2026-11-07T10:44:32",
+      "state": "STATE_CONFIRMED",
+      "event": "assistant",
+      "text": "ORDER CONFIRMED - sent to the kitchen!\nRECEIPT  Table 1  Session #37\n============================================\n  3 x Cheesy Does It          255.00 PHP\n  ----------------------------------------\n  Subtotal                     255.00 PHP\n  Discount (WELCOME10)         -25.50 PHP\n  Service Fee (10%)             22.95 PHP\n  GRAND TOTAL                  252.45 PHP\n============================================\nThank you, enjoy your meal!"
+    }
+  ],
+  "database_state": {
+    "session": {
+      "session_id": 37,
+      "table_no": 1,
+      "status": "CONFIRMED",
+      "created_at": "2026-11-07 02:42:55"
+    },
+    "order": {
+      "ok": true,
+      "lines": [
+        {
+          "item": "Cheesy Does It",
+          "qty": 3,
+          "notes": "",
+          "unit_price_php": 85.0,
+          "line_total_php": 255.0
+        }
+      ],
+      "subtotal_php": 255.0,
+      "discount": {
+        "code": "WELCOME10",
+        "description": "Welcome promo: 10% off",
+        "kind": "percent",
+        "value": 10.0,
+        "requires_id": false,
+        "valid": true,
+        "reason": null,
+        "amount_php": 25.5
+      },
+      "discount_php": 25.5,
+      "service_fee_php": 22.95,
+      "grand_total_php": 252.45
+    },
+    "stock": {
+      "Big Mack Daddy": 20,
+      "Quarter Pounder-ous Cheese": 15,
+      "Cheesy Does It": 19,
+      "Double Trouble Cheeseburger": 17,
+      "Lettuce Be Friends Veggie Burger": 12,
+      "Fishy Business Sandwich": 9,
+      "Cluck Norris Sandwich": 16,
+      "Nugget Life Chose Me (6pc)": 20,
+      "Cluck Yeah Fried Chicken": 14,
+      "Steak Me Seriously": 14,
+      "Sweet Spaghet Alert": 18,
+      "Egg-cellent Muffin": 20,
+      "Flap Jacked Hotcakes": 15,
+      "Fry Hard": 39,
+      "Hash Tag Brown": 29,
+      "Corn-y Jokes": 15,
+      "Bubble Trouble Cola": 50,
+      "Lemon Lime Time": 40,
+      "Brew-tiful Iced Tea": 40,
+      "Wake-Up Call Coffee": 25,
+      "Aqua Man Bottled Water": 50,
+      "Shake Your Shake Maker": 3,
+      "Swirl Me Maybe": 15,
+      "Sundae Funday": 20,
+      "Cone Voyage": 30,
+      "Apple of My Pie": 18,
+      "Mango Tango Pie": 2
+    }
+  }
+}

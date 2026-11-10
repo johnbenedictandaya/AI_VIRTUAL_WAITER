@@ -1,0 +1,4 @@
+# Extra words or phrases for the Vosk vocabulary, one per line.
+# Use real dictionary words (spaghetti, fries), not made-up ones.
+spaghetti
+french fries
